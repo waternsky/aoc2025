@@ -20,7 +20,6 @@ fn prob1(str: []const u8) u16 {
     return pass;
 }
 
-// 6284 wrong
 fn prob2(str: []const u8) u16 {
     var it = std.mem.tokenizeScalar(u8, str, '\n');
     var dial: i16 = 50;
