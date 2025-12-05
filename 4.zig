@@ -6,9 +6,91 @@ pub fn main() void {
     const inp = std.mem.trim(u8, input, " \t\r\n");
 
     const allocator = std.heap.page_allocator;
-    const mat = create2DArray(allocator, inp) catch unreachable;
+    var mat = create2DArray(allocator, inp) catch unreachable;
 
     print("Problem 1: {d}\n", .{prob1(mat)});
+    print("Problem 2: {d}\n", .{prob2(&mat)});
+
+    for (mat) |row| {
+        allocator.free(row);
+    }
+    allocator.free(mat);
+}
+
+fn prob2(matrix: *[][]u8) usize {
+    var tmp = forklift(matrix);
+    var removal: usize = tmp;
+    while (tmp != 0) {
+        tmp = forklift(matrix);
+        removal += tmp;
+    }
+    return removal;
+}
+
+fn forklift(matrix: *[][]u8) usize {
+    const rows = matrix.len;
+    const cols = matrix.*[0].len;
+    var count: usize = 0;
+    for (0..rows) |ro| {
+        for (0..cols) |co| {
+            const curr = matrix.*[ro][co];
+            if (curr != '@') continue;
+            var tmp: u8 = 0;
+            if (ro == 0) {
+                if (co == 0) {
+                    if (matrix.*[ro][co + 1] == '@') tmp += 1;
+                    if (matrix.*[ro + 1][co + 1] == '@') tmp += 1;
+                } else if (co == cols - 1) {
+                    if (matrix.*[ro][co - 1] == '@') tmp += 1;
+                    if (matrix.*[ro + 1][co - 1] == '@') tmp += 1;
+                } else {
+                    if (matrix.*[ro][co + 1] == '@') tmp += 1;
+                    if (matrix.*[ro][co - 1] == '@') tmp += 1;
+                    if (matrix.*[ro + 1][co - 1] == '@') tmp += 1;
+                    if (matrix.*[ro + 1][co + 1] == '@') tmp += 1;
+                }
+                if (matrix.*[ro + 1][co] == '@') tmp += 1;
+            } else if (ro == rows - 1) {
+                if (co == 0) {
+                    if (matrix.*[ro][co + 1] == '@') tmp += 1;
+                    if (matrix.*[ro - 1][co + 1] == '@') tmp += 1;
+                } else if (co == cols - 1) {
+                    if (matrix.*[ro][co - 1] == '@') tmp += 1;
+                    if (matrix.*[ro - 1][co - 1] == '@') tmp += 1;
+                } else {
+                    if (matrix.*[ro][co + 1] == '@') tmp += 1;
+                    if (matrix.*[ro][co - 1] == '@') tmp += 1;
+                    if (matrix.*[ro - 1][co - 1] == '@') tmp += 1;
+                    if (matrix.*[ro - 1][co + 1] == '@') tmp += 1;
+                }
+                if (matrix.*[ro - 1][co] == '@') tmp += 1;
+            } else {
+                if (co == 0) {
+                    if (matrix.*[ro - 1][co + 1] == '@') tmp += 1;
+                    if (matrix.*[ro + 1][co + 1] == '@') tmp += 1;
+                    if (matrix.*[ro][co + 1] == '@') tmp += 1;
+                } else if (co == cols - 1) {
+                    if (matrix.*[ro][co - 1] == '@') tmp += 1;
+                    if (matrix.*[ro - 1][co - 1] == '@') tmp += 1;
+                    if (matrix.*[ro + 1][co - 1] == '@') tmp += 1;
+                } else {
+                    if (matrix.*[ro][co + 1] == '@') tmp += 1;
+                    if (matrix.*[ro][co - 1] == '@') tmp += 1;
+                    if (matrix.*[ro - 1][co - 1] == '@') tmp += 1;
+                    if (matrix.*[ro - 1][co + 1] == '@') tmp += 1;
+                    if (matrix.*[ro + 1][co - 1] == '@') tmp += 1;
+                    if (matrix.*[ro + 1][co + 1] == '@') tmp += 1;
+                }
+                if (matrix.*[ro - 1][co] == '@') tmp += 1;
+                if (matrix.*[ro + 1][co] == '@') tmp += 1;
+            }
+            if (tmp < 4) {
+                matrix.*[ro][co] = '.';
+                count += 1;
+            }
+        }
+    }
+    return count;
 }
 
 fn prob1(matrix: [][]u8) usize {
